@@ -6,8 +6,8 @@ ENV PATH="/root/.local/bin/:$PATH"
 
 ADD https://astral.sh/uv/install.sh /uv-installer.sh
 
-RUN apt update && apt upgrade \
-    apt install -y --no-install-recommends curl ca-certificates ffmpeg&& \
+RUN apt update && apt upgrade && \
+    apt install -y --no-install-recommends curl ca-certificates ffmpeg && \
     sh /uv-installer.sh && rm /uv-installer.sh && \
     apt clean && rm -rf /var/lib/apt/lists/* && \
     uv venv -p 3.10
