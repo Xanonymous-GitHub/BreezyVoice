@@ -1,19 +1,71 @@
+name: breezyvoice
+
 services:
-  app:
-    image: breezyvoice:latest
-    build: .
-    ports:
-      - "8080:8080"
-    volumes:
-      - hf-cache:/root/.cache/huggingface/
-    command: api.py
+  breezyvoice:
+    image: "${BREEZYVOICE_IMAGE:-breezyvoice:local}"
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: breezyvoice
+
+    restart: unless-stopped
     init: true
+
+    # Bind only to Windows localhost.
+    # Tailscale Serve will expose it to your tailnet.
+    ports:
+      - "127.0.0.1:34336:8080"
+
+    environment:
+      PYTHONUTF8: "1"
+
+      MODEL_PATH: "MediaTek-Research/BreezyVoice"
+
+      SPEAKER_PROMPT_AUDIO_PATH: "/data/example.wav"
+
+      SPEAKER_PROMPT_TEXT_TRANSCRIPTION: >-
+        今天我們將介紹如何在自己的伺服器上部署語音合成模型，並透過安全的私人網路提供服務。
+
+      HF_HOME: "/var/cache/huggingface"
+      HF_TOKEN: ""
+
+    volumes:
+      - breezyvoice-hf-cache:/var/cache/huggingface
+      - ./data:/data:ro
+
+    command:
+      - api.py
+
+    shm_size: "1gb"
+
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
               count: 1
-              capabilities: [gpu]
+              capabilities:
+                - gpu
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fsS http://127.0.0.1:8080/models >/dev/null || exit 1
+      start_period: 15m
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+    stop_grace_period: 30s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
 volumes:
-  hf-cache:
+  breezyvoice-hf-cache:
+    name: breezyvoice-hf-cache
