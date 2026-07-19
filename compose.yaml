@@ -16,7 +16,7 @@ services:
     # Bind only to Windows localhost.
     # Tailscale Serve will expose it to your tailnet.
     ports:
-      - "127.0.0.1:34336:8080"
+      - "34336:8080"
 
     environment:
       PYTHONUTF8: "1"
