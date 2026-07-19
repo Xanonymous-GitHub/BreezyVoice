@@ -12,10 +12,10 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     uv venv -p 3.10
 
-COPY requirements.txt /breezyvoice/requirements.txt
+COPY pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install -r requirements.txt --index-strategy unsafe-best-match
+    uv sync --locked
 
 COPY . .
 
